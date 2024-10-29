@@ -1,151 +1,140 @@
-/*********************************************************************************
+const fs = require('fs');
+const path = require('path');
 
-WEB322 – Assignment 03
-I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  No part *  of this assignment has been copied manually or electronically from any other source (including 3rd party web sites) or distributed to other students.
+let itemsArray = [];
+let categoriesArray = [];
 
-Name: Ali taheri
-Student ID: 163955230
-Date: 10 29 2024
-Replit Web App URL: 
-GitHub Repository URL: 
-
-********************************************************************************/
-
-const fs = require("fs");
-
-var itemsArray = [];
-var categoriesArray = [];
-
-var pathToItems = "./data/items.json";
-var pathToCat = "./data/categories.json";
+const pathToItems = path.join(__dirname, 'data', 'items.json');
+const pathToCategories = path.join(__dirname, 'data', 'categories.json');
 
 function initialize() {
-  return new Promise((resolve, reject) => {
-    fs.readFile(pathToItems, "utf8", (err, jsonString) => {
-      if (err) {
-        return reject("Unable to read ITEMS file");
-      }
+    return Promise.all([loadItems(), loadCategories()]);
+}
 
-      try {
-      
-        itemsArray = JSON.parse(jsonString);
-
-        fs.readFile(pathToCat, "utf-8", (err, jsonString) => {
-          if (err) {
-            return reject("Unable to read CATEGORIES file");
-          }
-          try {
-           
-            categoriesArray = JSON.parse(jsonString);
-            resolve("Initialization successfull!");
-          } catch (error) {
-            reject("Unable to parse CATEGORIES file");
-          }
+function loadItems() {
+    return new Promise((resolve, reject) => {
+        fs.readFile(pathToItems, 'utf8', (err, data) => {
+            if (err) {
+                return reject("Unable to read items.json");
+            }
+            try {
+                itemsArray = JSON.parse(data);
+                resolve();
+            } catch (error) {
+                reject("Error parsing items.json");
+            }
         });
-      } catch (error) {
-        reject("Unable to parse ITEMS file");
-      }
     });
-  });
+}
+
+function loadCategories() {
+    return new Promise((resolve, reject) => {
+        fs.readFile(pathToCategories, 'utf8', (err, data) => {
+            if (err) {
+                return reject("Unable to read categories.json");
+            }
+            try {
+                categoriesArray = JSON.parse(data);
+                resolve();
+            } catch (error) {
+                reject("Error parsing categories.json");
+            }
+        });
+    });
 }
 
 function getAllItems() {
-  return new Promise((resolve, reject) => {
-    itemsArray.length === 0
-      ? reject("no results returned!")
-      : resolve(itemsArray);
-  });
+    return new Promise((resolve, reject) => {
+        itemsArray.length === 0
+            ? reject("No results returned!")
+            : resolve(itemsArray);
+    });
 }
 
 function getPublishedItems() {
-  return new Promise((resolve, reject) => {
-    const publishedItems = itemsArray.filter((item) => item.published);
-    publishedItems.length === 0
-      ? reject("no results returned")
-      : resolve(publishedItems);
-  });
+    return new Promise((resolve, reject) => {
+        const publishedItems = itemsArray.filter(item => item.published);
+        publishedItems.length === 0
+            ? reject("No results returned")
+            : resolve(publishedItems);
+    });
 }
 
 function getCategories() {
-  return new Promise((resolve, reject) => {
-    categoriesArray.length == 0
-      ? reject("no results returned")
-      : resolve(categoriesArray);
-  });
+    return new Promise((resolve, reject) => {
+        categoriesArray.length === 0
+            ? reject("No results returned")
+            : resolve(categoriesArray);
+    });
 }
 
-
 function addItem(itemData) {
-  return new Promise((resolve, reject) => {
-    if (itemData.published === undefined) {
-      itemData.published = false;
-    } else {
-      itemData.published = true;
-    }
-    itemData.id = itemsArray.length + 1;
-    itemsArray.push(itemData);
-    resolve(itemData);
-  });
+    return new Promise((resolve, reject) => {
+        if (itemData.published === undefined) {
+            itemData.published = false;
+        } else {
+            itemData.published = true;
+        }
+        itemData.id = itemsArray.length + 1; // Adjust ID assignment as needed
+        itemsArray.push(itemData);
+        resolve(itemData);
+    });
 }
 
 function getItemsByCategory(category) {
-  return new Promise((resolve, reject) => {
-    const filteredItems = itemsArray.filter(
-      (item) => item.category == category
-    );
-    filteredItems.length === 0
-      ? reject("no results returned")
-      : resolve(filteredItems);
-  });
+    return new Promise((resolve, reject) => {
+        const filteredItems = itemsArray.filter(item => item.category === category);
+        filteredItems.length === 0
+            ? reject("No results returned")
+            : resolve(filteredItems);
+    });
 }
 
 function getItemsByMinDate(minDateStr) {
-  return new Promise((resolve, reject) => {
-    const minDate = new Date(minDateStr);
-    const filteredItems = itemsArray.filter(
-      (item) => new Date(item.postDate) >= minDate
-    );
-    filteredItems.length === 0
-      ? reject("no results returned")
-      : resolve(filteredItems);
-  });
+    return new Promise((resolve, reject) => {
+        const minDate = new Date(minDateStr);
+        const filteredItems = itemsArray.filter(item => new Date(item.postDate) >= minDate);
+        filteredItems.length === 0
+            ? reject("No results returned")
+            : resolve(filteredItems);
+    });
 }
 
 function getItemById(id) {
-  return new Promise((resolve, reject) => {
-    const item = itemsArray.find((item) => item.id == id);
-    item ? resolve(item) : reject("item not found");
-  });
+    return new Promise((resolve, reject) => {
+        const item = itemsArray.find(item => item.id == id);
+        item ? resolve(item) : reject("Item not found");
+    });
 }
 
+// Initialize and log results
 initialize()
-  .then((message) => {
-    console.log(message); 
-    return getAllItems();
-  })
-  .then((items) => {
-    console.log("All items: ", items);
-    return getPublishedItems();
-  })
-  .then((publishedItems) => {
-    console.log("Published items: ", publishedItems);
-    return getCategories();
-  })
-  .then((categories) => {
-    console.log("Categories: ", categories);
-  })
-  .catch((err) => {
-    console.error(err);
-  });
-
+    .then(() => {
+        console.log("Initialization successful!");
+        return getAllItems();
+    })
+    .then(items => {
+        console.log("All items:", items);
+        return getPublishedItems();
+    })
+    .then(publishedItems => {
+        console.log("Published items:", publishedItems);
+        return getCategories();
+    })
+    .then(categories => {
+        console.log("Categories:", categories);
+    })
+    .catch(err => {
+        console.error(err);
+    });
 
 module.exports = {
-  initialize,
-  getAllItems,
-  getPublishedItems,
-  getCategories,
-  addItem,
-  getItemsByCategory,
-  getItemsByMinDate,
-  getItemById,
+    initialize,
+    getAllItems,
+    getPublishedItems,
+    getCategories,
+    addItem,
+    getItemsByCategory,
+    getItemsByMinDate,
+    getItemById,
 };
