@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "author": "renan de alencar queiroz",
+  "author": "ali taheri",
   "license": "ISC",
   "dependencies": {
     "cloudinary": "^2.5.1",
